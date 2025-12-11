@@ -3,51 +3,656 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
+    <title>To-Do List</title>
     <style>
+        /* === Base Styles === */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0d0d0d;
+            --bg-tertiary: #1a1a1a;
+            --text-primary: #e8e8e8;
+            --text-secondary: #888;
+            --accent: #FF3621;
+            --accent-hover: #ff5a47;
+            --success: #4ade80;
+            --border: #2a2a2a;
+            --radius: 8px;
+        }
+        
         body {
-            font-family: system-ui, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            background: linear-gradient(145deg, #000000 0%, #0a0a0a 50%, #111111 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 40px 20px;
         }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
+        
+        /* === Layout === */
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        
+        header {
+            margin-bottom: 32px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        /* === Tabs === */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+        
+        .tab {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 14px;
+            padding: 8px 16px;
             cursor: pointer;
+            border-radius: var(--radius);
+            transition: all 0.15s ease;
         }
-        #result {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f0f0f0;
+        
+        .tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+        
+        .tab.active {
+            color: var(--accent);
+            background: var(--bg-secondary);
+        }
+        
+        /* === Create Form === */
+        .create-form {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            padding: 12px;
+            transition: border-color 0.15s ease;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .btn {
+            background: var(--accent);
+            border: none;
+            border-radius: var(--radius);
+            color: #fff;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        
+        .btn:hover {
+            background: var(--accent-hover);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        
+        .btn-danger {
+            background: #dc2626;
+        }
+        
+        .btn-danger:hover {
+            background: #ef4444;
+        }
+        
+        /* === Todo List === */
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .todo-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .todo-item:hover {
+            border-color: var(--accent);
+        }
+        
+        .todo-item.completed {
+            opacity: 0.5;
+        }
+        
+        .todo-item.deleted {
+            opacity: 0.3;
+            border-left: 3px solid #dc2626;
+        }
+        
+        /* Custom Checkbox */
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
             border-radius: 4px;
-            display: none;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin-top: 2px;
+        }
+        
+        .checkbox:hover {
+            border-color: var(--accent);
+        }
+        
+        .checkbox.checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+        
+        .checkbox.checked::after {
+            content: '✓';
+            color: #000;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .todo-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .todo-title {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+        
+        .todo-item.completed .todo-title {
+            text-decoration: line-through;
+        }
+        
+        .todo-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            word-break: break-word;
+        }
+        
+        .todo-status {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+        
+        .todo-status.pending {
+            color: var(--accent);
+        }
+        
+        .todo-status.completed {
+            color: var(--success);
+        }
+        
+        .todo-status.deleted {
+            color: #dc2626;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-secondary);
+        }
+        
+        /* === Detail Modal === */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 480px;
+            padding: 24px;
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .modal-actions .btn {
+            flex: 1;
+            min-width: 100px;
         }
     </style>
 </head>
 <body>
-    <h1>Hello World</h1>
-    <button id="fetchTime">Get Database Time</button>
-    <div id="result"></div>
+    <!-- Main Container -->
+    <div class="container">
+        <header>
+            <h1>To-Do List</h1>
+            <p class="subtitle">Stay organized, get things done</p>
+        </header>
+        
+        <!-- Tab Navigation: Switch between active and all items -->
+        <div class="tabs">
+            <button class="tab active" data-tab="active">Active</button>
+            <button class="tab" data-tab="all">All Items</button>
+        </div>
+        
+        <!-- Create New Todo Form -->
+        <form class="create-form" id="createForm">
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" placeholder="What needs to be done?" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" placeholder="Add some details..."></textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn">Add Task</button>
+            </div>
+        </form>
+        
+        <!-- Todo List Container -->
+        <div class="todo-list" id="todoList">
+            <div class="empty-state">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Detail/Edit Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Edit Task</h2>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-group">
+                    <label for="editTitle">Title</label>
+                    <input type="text" id="editTitle" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDescription">Description</label>
+                    <textarea id="editDescription" name="description"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn">Save</button>
+                    <button type="button" class="btn btn-secondary" id="toggleStatusBtn">Mark Done</button>
+                    <button type="button" class="btn btn-danger" id="deleteBtn">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
-        document.getElementById('fetchTime').addEventListener('click', async () => {
-            const resultDiv = document.getElementById('result');
-            resultDiv.style.display = 'block';
-            resultDiv.textContent = 'Loading...';
+        /* ===================================================================
+           STATE MANAGEMENT
+           Tracks current tab and todo list data
+        =================================================================== */
+        let currentTab = 'active';
+        let todos = [];
+        let currentEditTodo = null;
+
+        /* ===================================================================
+           API FUNCTIONS
+           All fetch calls to the backend /todos endpoints
+        =================================================================== */
+        
+        async function fetchTodos(includeAll = false) {
+            const url = includeAll ? '/todos?include_all=true' : '/todos';
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to fetch todos');
+            return await response.json();
+        }
+
+        async function createTodo(title, description) {
+            const response = await fetch('/todos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description })
+            });
+            if (!response.ok) throw new Error('Failed to create todo');
+            return await response.json();
+        }
+
+        async function updateTodo(id, title, description) {
+            const response = await fetch(`/todos/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description })
+            });
+            if (!response.ok) throw new Error('Failed to update todo');
+            return await response.json();
+        }
+
+        async function changeStatus(id, status) {
+            const response = await fetch(`/todos/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            if (!response.ok) throw new Error('Failed to change status');
+            return await response.json();
+        }
+
+        async function deleteTodo(id) {
+            const response = await fetch(`/todos/${id}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) throw new Error('Failed to delete todo');
+            return await response.json();
+        }
+
+        /* ===================================================================
+           UI RENDERING
+           Functions to render the todo list and manage visual state
+        =================================================================== */
+        
+        function renderTodos() {
+            const listEl = document.getElementById('todoList');
             
-            try {
-                const response = await fetch('/api/time');
-                const data = await response.json();
-                
-                if (response.ok) {
-                    resultDiv.textContent = `Database Time: ${data.time}`;
-                } else {
-                    resultDiv.textContent = `Error: ${data.detail}`;
-                }
-            } catch (error) {
-                resultDiv.textContent = `Error: ${error.message}`;
+            if (todos.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">No tasks yet. Create one above!</div>';
+                return;
             }
+            
+            listEl.innerHTML = todos.map(todo => `
+                <div class="todo-item ${todo.status}" data-id="${todo.id}">
+                    <div class="checkbox ${todo.status === 'completed' ? 'checked' : ''}" 
+                         onclick="event.stopPropagation(); toggleComplete(${todo.id}, '${todo.status}')"></div>
+                    <div class="todo-content">
+                        <div class="todo-title">${escapeHtml(todo.title)}</div>
+                        ${todo.description ? `<div class="todo-desc">${escapeHtml(todo.description)}</div>` : ''}
+                    </div>
+                    <span class="todo-status ${todo.status}">${todo.status}</span>
+                </div>
+            `).join('');
+            
+            // Add click handlers to open detail modal
+            listEl.querySelectorAll('.todo-item').forEach(item => {
+                item.addEventListener('click', () => openEditModal(parseInt(item.dataset.id)));
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        /* ===================================================================
+           EVENT HANDLERS
+           User interactions: tabs, forms, checkbox toggles, modal
+        =================================================================== */
+        
+        async function loadTodos() {
+            try {
+                todos = await fetchTodos(currentTab === 'all');
+                renderTodos();
+            } catch (error) {
+                console.error('Error loading todos:', error);
+                document.getElementById('todoList').innerHTML = 
+                    `<div class="empty-state">Error loading tasks: ${error.message}</div>`;
+            }
+        }
+
+        async function toggleComplete(id, currentStatus) {
+            try {
+                const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
+                await changeStatus(id, newStatus);
+                await loadTodos();
+            } catch (error) {
+                console.error('Error toggling status:', error);
+                alert('Failed to update task status');
+            }
+        }
+
+        function openEditModal(id) {
+            currentEditTodo = todos.find(t => t.id === id);
+            if (!currentEditTodo) return;
+            
+            document.getElementById('editId').value = currentEditTodo.id;
+            document.getElementById('editTitle').value = currentEditTodo.title;
+            document.getElementById('editDescription').value = currentEditTodo.description || '';
+            
+            // Update toggle button text based on current status
+            const toggleBtn = document.getElementById('toggleStatusBtn');
+            toggleBtn.textContent = currentEditTodo.status === 'completed' ? 'Mark Pending' : 'Mark Done';
+            
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            currentEditTodo = null;
+        }
+
+        /* ===================================================================
+           INITIALIZATION
+           Set up event listeners and load initial data
+        =================================================================== */
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentTab = tab.dataset.tab;
+                    loadTodos();
+                });
+            });
+            
+            // Create form submission
+            document.getElementById('createForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const title = document.getElementById('title').value.trim();
+                const description = document.getElementById('description').value.trim();
+                
+                if (!title) return;
+                
+                try {
+                    await createTodo(title, description);
+                    document.getElementById('title').value = '';
+                    document.getElementById('description').value = '';
+                    await loadTodos();
+                } catch (error) {
+                    console.error('Error creating todo:', error);
+                    alert('Failed to create task');
+                }
+            });
+            
+            // Modal close button
+            document.getElementById('modalClose').addEventListener('click', closeModal);
+            
+            // Close modal on overlay click
+            document.getElementById('modalOverlay').addEventListener('click', (e) => {
+                if (e.target.id === 'modalOverlay') closeModal();
+            });
+            
+            // Edit form submission
+            document.getElementById('editForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = parseInt(document.getElementById('editId').value);
+                const title = document.getElementById('editTitle').value.trim();
+                const description = document.getElementById('editDescription').value.trim();
+                
+                try {
+                    await updateTodo(id, title, description);
+                    closeModal();
+                    await loadTodos();
+                } catch (error) {
+                    console.error('Error updating todo:', error);
+                    alert('Failed to update task');
+                }
+            });
+            
+            // Toggle status button in modal
+            document.getElementById('toggleStatusBtn').addEventListener('click', async () => {
+                if (!currentEditTodo) return;
+                const newStatus = currentEditTodo.status === 'completed' ? 'pending' : 'completed';
+                try {
+                    await changeStatus(currentEditTodo.id, newStatus);
+                    closeModal();
+                    await loadTodos();
+                } catch (error) {
+                    console.error('Error toggling status:', error);
+                    alert('Failed to update task status');
+                }
+            });
+            
+            // Delete button in modal
+            document.getElementById('deleteBtn').addEventListener('click', async () => {
+                if (!currentEditTodo) return;
+                if (!confirm('Are you sure you want to delete this task?')) return;
+                
+                try {
+                    await deleteTodo(currentEditTodo.id);
+                    closeModal();
+                    await loadTodos();
+                } catch (error) {
+                    console.error('Error deleting todo:', error);
+                    alert('Failed to delete task');
+                }
+            });
+            
+            // Initial load
+            loadTodos();
         });
     </script>
 </body>

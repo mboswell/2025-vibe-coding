@@ -1,6 +1,6 @@
 # 2025 Vibe Coding Demo
 
-A simple web application built with FastAPI that connects to a Databricks Lakebase database.
+A to-do list web application built with FastAPI and Databricks Lakebase.
 
 ## Technologies
 
@@ -20,4 +20,14 @@ A simple web application built with FastAPI that connects to a Databricks Lakeba
 ## API Endpoints
 
 - `GET /` - Serves the main index.html page
-- `GET /api/time` - Returns the current time from the Lakebase database
+- `POST /todos` - Create a new to-do item
+- `GET /todos` - List to-do items (use `?include_all=true` to see deleted)
+- `PUT /todos/{id}` - Update a to-do item
+- `PUT /todos/{id}/status` - Change to-do status
+- `DELETE /todos/{id}` - Soft delete a to-do item
+
+## Architecture
+
+- `/routers` - API route handlers
+- `/services` - Business logic and database operations
+- `/frontend` - Static HTML frontend
